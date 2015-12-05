@@ -56,8 +56,14 @@ public class GripperSubsystem extends Subsystem {
         //setDefaultCommand(new MySpecialCommand());
     }
 	public void setVoltage(double v) {
-		leftMotorController.set(v);
-		rightMotorController.set(v);
+		try {
+			leftMotorController.set(v);
+			rightMotorController.set(v);
+		}
+		catch (RuntimeException e)
+		{
+			System.out.println("Caught and dropped (spurious??) exception in setVoltage");
+		}
 	}
 
 }

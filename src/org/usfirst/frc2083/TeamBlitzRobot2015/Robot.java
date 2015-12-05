@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 import org.usfirst.frc2083.TeamBlitzRobot2015.commands.*;
 import org.usfirst.frc2083.TeamBlitzRobot2015.subsystems.*;
@@ -39,6 +40,7 @@ public class Robot extends IterativeRobot {
     DriveCommand driveCommand;
     GripperCommand gripperCommand;
     FourBarCommand fourBarCommand;
+    DigitalInput autoDistSelect;
 //    ClawCommand clawCommand;
 //    ShootCommand shootCommand;
 
@@ -80,8 +82,11 @@ public class Robot extends IterativeRobot {
         RobotMap.fourBarMotorController.enableBrakeMode(true);
         RobotMap.fourBarMotorController.setForwardSoftLimit(756);
         RobotMap.fourBarMotorController.enableForwardSoftLimit(true);
-        RobotMap.fourBarMotorController.setReverseSoftLimit(8);
+        RobotMap.fourBarMotorController.setReverseSoftLimit(100);  //was 8
         RobotMap.fourBarMotorController.enableReverseSoftLimit(true);
+        
+        autoDistSelect = new DigitalInput(RobotMap.autoDistSelectChannel);
+        
 //        double p = 1;
 //        double i = .01;
 //        double d = 0;
@@ -132,6 +137,11 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
     	RobotMap.auto = true;
     	RobotMap.autoTimer = System.currentTimeMillis();
+    	if (autoDistSelect.get()) {
+    		RobotMap.autoDriveTime = 0; // if jumper is unplugged
+    	} else {
+    		RobotMap.autoDriveTime = 1500; // if jumper is plugged in
+    	}
     	driveCommand.enableControl();
     	driveCommand.start();
     	//System.out.println("ran Autonomous init");
@@ -141,14 +151,14 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-    	if(System.currentTimeMillis()-RobotMap.autoTimer < 2500 ){
-    		RobotMap.autoY = 0.5;
+    	if(System.currentTimeMillis()-RobotMap.autoTimer < RobotMap.autoDriveTime ){
+    		RobotMap.autoY = .5;
 //    		System.out.println("autoY = .5, System Time millis = " 
 //    				+ System.currentTimeMillis() + 
 //    				", autoTimer = " + RobotMap.autoTimer);
     	} else {
     		RobotMap.autoY = 0;
-    	} 
+        }
     	Scheduler.getInstance().run();
     }
 
